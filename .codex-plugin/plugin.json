@@ -1,0 +1,31 @@
+{
+  "name": "codex-reviewer",
+  "version": "0.1.0",
+  "description": "Structured review workflows for plans, implementations, and shipped notes.",
+  "repository": "https://github.com/schuettc/codex-reviewer",
+  "license": "MIT",
+  "keywords": [
+    "review",
+    "planning",
+    "codex",
+    "claude-code"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Reviewer",
+    "shortDescription": "Second-pass review for Claude-driven work.",
+    "longDescription": "Review plans, implementations, and shipped summaries with a stricter findings-first Codex pass.",
+    "developerName": "schuettc",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Review this feature plan for hidden risks and missing tests.",
+      "Review this implementation against the approved feature plan.",
+      "Check whether this shipped summary overstates what the code does."
+    ],
+    "brandColor": "#0F766E"
+  }
+}
