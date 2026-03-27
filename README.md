@@ -14,6 +14,102 @@ The plugin ships three focused skills:
 - `implementation-review`: review code changes against the approved plan and call out bugs, regressions, and missing tests
 - `shipped-review`: verify that `shipped.md` matches the code and test evidence instead of overstating what landed
 
+## Install
+
+Codex supports two practical local install patterns for plugins:
+
+- a personal marketplace at `~/.agents/plugins/marketplace.json`
+- a repo marketplace at `$REPO_ROOT/.agents/plugins/marketplace.json`
+
+For most users, the personal marketplace is the right default.
+
+### Personal install
+
+1. Clone this repository somewhere local:
+
+```bash
+git clone git@github.com:schuettc/codex-reviewer.git
+```
+
+2. Copy it into your Codex plugins directory:
+
+```bash
+mkdir -p ~/.codex/plugins
+cp -R ./codex-reviewer ~/.codex/plugins/codex-reviewer
+```
+
+3. Create or update `~/.agents/plugins/marketplace.json`:
+
+```json
+{
+  "name": "local-personal",
+  "interface": {
+    "displayName": "Local Personal"
+  },
+  "plugins": [
+    {
+      "name": "codex-reviewer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-reviewer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
+```
+
+4. Restart Codex.
+
+5. In Codex CLI, open the plugin surface:
+
+```text
+codex
+/plugins
+```
+
+### Repo install
+
+If you want the plugin available only for one repository:
+
+1. Copy this repo into your project under `$REPO_ROOT/plugins/codex-reviewer`
+2. Create or update `$REPO_ROOT/.agents/plugins/marketplace.json`
+3. Point the plugin entry at `./plugins/codex-reviewer`
+4. Restart Codex
+
+Example repo marketplace:
+
+```json
+{
+  "name": "local-repo",
+  "interface": {
+    "displayName": "Local Repo"
+  },
+  "plugins": [
+    {
+      "name": "codex-reviewer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-reviewer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
+```
+
+### Updating
+
+After you change the plugin, update the plugin directory your marketplace points to and restart Codex so it reloads the local install.
+
 Examples:
 
 ```text
