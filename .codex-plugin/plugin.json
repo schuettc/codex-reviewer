@@ -1,7 +1,7 @@
 {
   "name": "codex-reviewer",
-  "version": "0.1.0",
-  "description": "Structured review workflows for plans, implementations, and shipped notes.",
+  "version": "0.2.0",
+  "description": "Structured review workflows for plans, implementations, and shipped notes. Writes to standardized reviews/ directory with round-based tracking.",
   "repository": "https://github.com/schuettc/codex-reviewer",
   "license": "MIT",
   "keywords": [
