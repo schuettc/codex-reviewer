@@ -1,6 +1,6 @@
 ---
 name: implementation-review
-description: Review Claude-generated code changes against the intended plan. Use for diffs, working tree reviews, PR-style reviews, and requests to validate an implementation before merge.
+description: Review Claude-generated code changes against the intended plan via GitHub PR review. Use for PR reviews, diff reviews, and requests to validate an implementation before merge.
 ---
 
 # Implementation Review
@@ -9,14 +9,29 @@ Use this skill when the user wants a second set of eyes on code that Claude alre
 
 Primary goal: find behavioral bugs, regressions, and plan drift.
 
+## Finding the PR
+
+The user will provide a feature ID or PR URL. Find the PR:
+
+```bash
+gh pr list --head feature/<feature-id> --json number,url,title,body --jq '.[0]'
+```
+
 ## Review Context
 
-Before reviewing, check for implementer-provided context:
+1. Read the PR description for what was done, why, and areas of concern:
+   ```bash
+   gh pr view <pr-number> --json body,title,additions,deletions,changedFiles
+   ```
 
-1. Find the latest `docs/features/<feature-id>/reviews/context-round-N.md` file
-2. Read it to understand what was implemented, why, and what areas need focus
-3. Determine the current round number N from the latest context file
-4. If no context file exists, determine N by counting existing `codex-review-round-*.md` files + 1
+2. Read the full diff:
+   ```bash
+   gh pr diff <pr-number>
+   ```
+
+3. Read the feature artifacts:
+   - `docs/features/<feature-id>/idea.md` — original problem
+   - `docs/features/<feature-id>/plan.md` — intended plan
 
 ## Review Priorities
 
@@ -25,44 +40,38 @@ Before reviewing, check for implementer-provided context:
 - missing or weak tests
 - mismatch between implementation and approved plan
 - unsafe refactors or migrations
-- docs drift, especially when `shipped.md` or `plan.md` no longer matches the code
+- docs drift, especially when `plan.md` no longer matches the code
 - accidental scope expansion
-- areas of concern flagged by the implementer in the context file
-
-## Suggested Workflow
-
-1. Read the review context file (`context-round-N.md`) if it exists.
-2. Read the intended source of truth:
-   `plan.md`, `idea.md`, issue notes, or user instructions.
-3. Inspect the changed files or requested implementation area.
-4. Compare what changed against what was supposed to change.
-5. Check whether tests exist for the risky paths.
-6. Produce a review with findings first, ordered by severity.
+- areas of concern flagged in the PR description
 
 ## Output
 
-Write the review to `docs/features/<feature-id>/reviews/codex-review-round-N.md` with this format:
+Post a PR review using `gh`:
 
-```markdown
----
-round: N
-reviewer: codex
-verdict: [pass|conditional-pass|fail]
-reviewed: YYYY-MM-DD HH:MM:SS
----
+```bash
+gh pr review <pr-number> --comment --body "## Codex Implementation Review
 
-# Codex Review: Round N — [Feature Name]
+### Verdict: [PASS / CONDITIONAL PASS / FAIL]
 
-## Verdict: [PASS / CONDITIONAL PASS / FAIL]
-
-## Critical Findings
+### Critical Findings
 - [Blocking issues ordered by severity]
 
-## Recommendations
+### Recommendations
 - [Non-blocking suggestions]
 
-## Areas of Concern Response
-- [Direct response to implementer's flagged concerns, if any]
+### Areas of Concern Response
+- [Direct response to concerns flagged in PR description]"
+```
+
+For specific code issues, post inline comments:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/<pr-number>/comments \
+  --method POST \
+  --field body="[comment]" \
+  --field commit_id="$(gh pr view <pr-number> --json headRefOid --jq '.headRefOid')" \
+  --field path="[file]" \
+  --field line=[line]
 ```
 
 ## Output Rules
@@ -71,12 +80,6 @@ reviewed: YYYY-MM-DD HH:MM:SS
 - Reference specific files and lines when possible.
 - Focus on bugs, regressions, and unverified assumptions before style concerns.
 - If no findings are present, say that explicitly and mention remaining test or verification gaps.
-
-## Verdict Guidelines
-
-- **PASS**: No critical issues. Implementation is solid.
-- **CONDITIONAL PASS**: Minor issues that should be addressed but don't block progress.
-- **FAIL**: Critical issues that must be resolved.
 
 ## Good Review Questions
 
