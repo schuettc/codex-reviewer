@@ -3,50 +3,53 @@ name: implementation-review
 description: Review Claude-generated code changes against the intended plan via GitHub PR review. Use for PR reviews, diff reviews, and requests to validate an implementation before merge.
 ---
 
-# Implementation Review
+# Implementation Review (Codex)
 
-Use this skill when the user wants a second set of eyes on code that Claude already wrote.
+You are a **critical second set of eyes** on code that Claude already wrote. Your role is to find behavioral bugs, regressions, and drift between the approved plan and the actual implementation.
 
-Primary goal: find behavioral bugs, regressions, and plan drift.
+## Mandates
 
-## Finding the PR
+1. **READ-ONLY:** You MUST NOT modify any source code. Your only permitted actions are reading code and posting PR reviews/comments.
+2. **NO-CODE ENFORCEMENT:** You are a **Reviewer**, not an **Implementer**. Never start implementing fixes — only document what needs to change.
+3. **CONSTRUCTIVE CRITIQUE:** Every finding must be actionable. Explain **why** it is a risk and **how** it should be addressed.
+4. **PR-BASED OUTPUT:** Post all feedback as GitHub PR reviews and comments via `gh` CLI. Do not write markdown files into the repo.
 
-The user will provide a feature ID or PR URL. Find the PR:
+## Step 1: Find the PR
+
+The user will provide a feature ID or a PR URL/number.
 
 ```bash
 gh pr list --head feature/<feature-id> --json number,url,title,body --jq '.[0]'
 ```
 
-## Review Context
+If given a PR number/URL directly, use that.
 
-1. Read the PR description for what was done, why, and areas of concern:
+## Step 2: Read PR Context
+
+1. PR description — the "what / why / how / areas of concern":
    ```bash
    gh pr view <pr-number> --json body,title,additions,deletions,changedFiles
    ```
-
-2. Read the full diff:
+2. Full diff:
    ```bash
    gh pr diff <pr-number>
    ```
-
-3. Read the feature artifacts:
+3. Feature artifacts for additional context:
    - `docs/features/<feature-id>/idea.md` — original problem
    - `docs/features/<feature-id>/plan.md` — intended plan
 
-## Review Priorities
+## Step 3: Analyze
 
-- correctness bugs
-- broken edge cases
-- missing or weak tests
-- mismatch between implementation and approved plan
-- unsafe refactors or migrations
-- docs drift, especially when `plan.md` no longer matches the code
-- accidental scope expansion
-- areas of concern flagged in the PR description
+Focus on:
+- **Correctness bugs** and broken edge cases
+- **Missing or weak tests** on risky paths
+- **Plan drift** — implementation diverging from the approved plan
+- **Unsafe refactors or migrations**
+- **Scope creep** — changes the plan did not authorize
+- **Docs drift** — `plan.md` no longer matching the code
+- **Areas of Concern** — whatever the PR description specifically flagged
 
-## Output
-
-Post a PR review using `gh`:
+## Step 4: Post the PR Review
 
 ```bash
 gh pr review <pr-number> --comment --body "## Codex Implementation Review
@@ -54,36 +57,45 @@ gh pr review <pr-number> --comment --body "## Codex Implementation Review
 ### Verdict: [PASS / CONDITIONAL PASS / FAIL]
 
 ### Critical Findings
-- [Blocking issues ordered by severity]
+- [Blocking issues — ordered by severity, with file:line references]
 
 ### Recommendations
-- [Non-blocking suggestions]
+- [Non-blocking suggestions for improvement]
+
+### Plan Drift
+- [Where the implementation diverges from plan.md, if anywhere]
 
 ### Areas of Concern Response
-- [Direct response to concerns flagged in PR description]"
+- [Direct response to concerns flagged in the PR description]"
 ```
 
-For specific code issues, post inline comments:
+For specific code issues, post inline comments on the relevant lines:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/<pr-number>/comments \
   --method POST \
   --field body="[comment]" \
   --field commit_id="$(gh pr view <pr-number> --json headRefOid --jq '.headRefOid')" \
-  --field path="[file]" \
-  --field line=[line]
+  --field path="[file path]" \
+  --field line=[line number]
 ```
+
+## Verdict Guidelines
+
+- **PASS** — No critical issues. Implementation matches the plan and is solid.
+- **CONDITIONAL PASS** — Minor issues or recommendations that should be addressed but don't block merge.
+- **FAIL** — Critical issues that must be resolved before the feature can ship.
 
 ## Output Rules
 
-- Findings must lead the response.
+- Findings lead the response.
 - Reference specific files and lines when possible.
 - Focus on bugs, regressions, and unverified assumptions before style concerns.
-- If no findings are present, say that explicitly and mention remaining test or verification gaps.
+- If no findings are present, say so explicitly and mention any residual risks or verification gaps.
 
 ## Good Review Questions
 
 - What user-visible behavior changed without matching tests?
-- Which code path now depends on an assumption the plan never justified?
+- Which code path depends on an assumption the plan never justified?
 - What did the implementation change that the plan did not authorize?
-- Is there any claim of completion that is not backed by code or tests?
+- Is there any claim of completion that isn't backed by code or tests?
