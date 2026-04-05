@@ -1,6 +1,6 @@
 {
   "name": "codex-reviewer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Structured review workflows for plans, implementations, and shipped notes. Posts reviews directly on GitHub PRs via gh CLI.",
   "repository": "https://github.com/schuettc/codex-reviewer",
   "license": "MIT",
