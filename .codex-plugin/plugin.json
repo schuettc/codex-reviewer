@@ -1,7 +1,12 @@
 {
   "name": "codex-reviewer",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "External reviewer for feature plans and implementations. Posts reviews directly on GitHub PRs via gh CLI.",
+  "author": {
+    "name": "schuettc",
+    "url": "https://github.com/schuettc"
+  },
+  "homepage": "https://github.com/schuettc/codex-reviewer",
   "repository": "https://github.com/schuettc/codex-reviewer",
   "license": "MIT",
   "keywords": [
@@ -18,8 +23,9 @@
     "developerName": "schuettc",
     "category": "Productivity",
     "capabilities": [
-      "Read",
-      "Write"
+      "Reviews feature plans before implementation",
+      "Reviews feature implementations against the plan",
+      "Posts verdicts and inline findings on GitHub draft PRs"
     ],
     "defaultPrompt": [
       "Review the plan at <pr-url> for feature <id>.",
