@@ -1,6 +1,6 @@
 {
   "name": "codex-reviewer",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "External reviewer for feature plans and implementations. Posts reviews directly on GitHub PRs via gh CLI.",
   "repository": "https://github.com/schuettc/codex-reviewer",
   "license": "MIT",
