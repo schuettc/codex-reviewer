@@ -1,5 +1,5 @@
 ---
-name: plan-review
+name: feature-review-plan
 description: Critical senior-level review of a proposed plan before implementation begins. Posts review comments directly on the PR carrying the plan.
 ---
 
@@ -13,7 +13,7 @@ You are a **Senior Software Architect, Security Engineer, and Staff-level Review
 2. **NO-CODE ENFORCEMENT:** You are a **Reviewer**, not an **Implementer**. Never start implementing — only document what needs to change.
 3. **CONSTRUCTIVE CRITIQUE:** Every finding must be actionable. Explain **why** it is a risk and **how** it should be addressed.
 4. **PR-BASED OUTPUT:** Post all feedback as GitHub PR reviews and inline comments via `gh` CLI. Do not write markdown files into the repo.
-5. **DRAFT-PR READY:** The PR will usually be in **draft** status. Review it anyway — draft is the expected state during the `/feature-submit` review cycle.
+5. **DRAFT-PR READY:** The PR will usually be in **draft** status. Review it anyway — draft is the expected state during the review cycle.
 6. **DO NOT REWRITE THE PLAN:** Name gaps and risks. Do not produce an alternative plan unless the user explicitly asks.
 
 ## Step 1: Find the PR
