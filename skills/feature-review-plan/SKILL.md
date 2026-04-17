@@ -86,10 +86,11 @@ Review body format:
 **Inline comments**: For specific plan-section issues, post inline comments:
 
 ```bash
+COMMIT_SHA=$(gh pr view $PR_NUMBER --json headRefOid --jq '.headRefOid')
 gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments \
   --method POST \
   --field body="[your comment — reference the concern and suggest the fix]" \
-  --field commit_id="$(gh pr view $PR_NUMBER --json headRefOid --jq '.headRefOid')" \
+  --field commit_id="$COMMIT_SHA" \
   --field path="[file path]" \
   --field line=[line number]
 ```
@@ -126,6 +127,38 @@ You are not grading the plan's prose, structure, or formatting. You are looking 
 - Tests for code paths that don't exist yet and will obviously need tests
 - Requests to "define terms" that the team already uses consistently
 - Anything that amounts to "this plan is fine but here's how I'd write it"
+- **No-op "findings"** — if your finding concludes "no change required", "just confirming consistency", "the plan already handles this", or "this is acceptable as-is", **delete the finding entirely**. A finding exists to request a change. If you are not requesting a change, you are writing commentary, not a finding.
+- **Hedged hypotheticals** — "if a user somehow…", "in the edge case where someone might…", "theoretically this could…". If you cannot name a realistic input or state that triggers the failure, it is not a finding.
+- **Defensive additions for things that cannot happen** given the plan's stated constraints. Trust the plan's stated inputs.
+- **Implementation details that belong in code review** — see "Plan Review vs. Code Review" below
+
+### Plan Review vs. Code Review (CRITICAL — read before marking anything Blocking)
+
+A **plan review** validates the *what* and *why* — correct components, correct surfaces, correct algorithm, correct data flow. A **code review** validates the *how* — prop signatures, CSS layout, variable naming, null checks, type narrowing.
+
+**These are implementation details. They are NOT blocking plan findings:**
+
+- Function signatures, prop types, or return type shapes (e.g., "return `Set<number>` vs `Map<string, Set<number>>`")
+- CSS/layout concerns (e.g., "this flex container will misalign the grid")
+- Component naming conflicts that are trivially resolved during coding
+- How to thread state through the component tree (e.g., "pass as prop vs use context hook")
+- Null/undefined guard placement (e.g., "add a fallback when data is null")
+- Internal API design of helper functions (parameter order, overloads, generics)
+
+A competent developer will resolve these during implementation. If you flag them, they belong in **Recommendations** as **Should-fix** at most — never **Blocking** in Critical Findings.
+
+**The plan-level test for Blocking:** Would this gap cause the developer to build the **wrong thing**, target the **wrong component**, use the **wrong algorithm**, or miss an **entire surface**? If yes, it's blocking. If the developer would simply make a local coding decision to resolve it, it's not blocking — it's an implementation detail.
+
+**Examples of plan-level blocking findings:**
+- "The plan targets ContextualView but the live viewer uses ViewerStatusSlot" — wrong component
+- "The plan assumes an `indexPosition` field that doesn't exist on ShopTransaction" — wrong data model
+- "The plan omits the Decisions tab entirely" — missing surface
+
+**Examples of implementation details (NOT blocking):**
+- "The return type should be `{ cards: Set<number>, relics: Set<number> }` instead of `Set<number>`" — type shape
+- "The centered flex wrapper will misalign the grid" — CSS layout
+- "`ExpandedBody` doesn't receive `runStatus` as a prop" — state threading
+- "The local `ShopView` name will conflict with the extracted one" — naming
 
 **The nit test:** if the author could reasonably reply "I disagree, and I'm not changing the plan" and the feature would still ship safely — it was a nit. Do not post it.
 
@@ -175,6 +208,8 @@ Inline comments must still contain all five — they can be terser, but Location
 - Findings that do not name a `plan.md` heading or line
 - "This might be out of scope" with no pointer to the out-of-scope bullet
 - Restating what the plan says without identifying a gap
+- "No change required, just confirming X" / "just noting that Y is handled correctly" — these are not findings. Delete them.
+- "For completeness, you could also…" / "it might be worth considering…" — if it's not required, it's noise.
 
 ### When you cannot be fully specific
 
@@ -215,3 +250,5 @@ gh pr review $PR_NUMBER --request-changes --body "your review body here"
 ```
 
 If you do not execute `gh pr review`, your review is lost and the workflow fails. This is the most important step.
+
+**IMPORTANT: You DO have permission to approve.** You are running as `github-actions[bot]` with `pull-requests: write` permission. The `--approve` flag works even on draft PRs. Do NOT downgrade to `--comment` because you think you lack permission — you have full permission. Use `--approve` for PASS, `--request-changes` for FAIL, and `--comment` only for CONDITIONAL PASS.
